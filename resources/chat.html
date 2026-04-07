@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Socket.IO chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages>li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages>li:nth-child(odd) {
+            background: #efefef;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="jwt_txt"
+            value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5Y2M4ZWU5ZTk3OGZiOTEwOTk5ZTVlZiIsImlhdCI6MTc3NTAxNTUwMSwiZXhwIjoxNzc1MDE5MTAxfQ.nwDi-6sSh-2RTNqI6xCc760wepvZspL0nsz_yw3u4YA">
+        <input type="button" onclick="getuser()" value="Get user data">
+    </div>
+    <p id="user"></p>
+    <div>
+        <input type="text" id="user_txt" value="69cc8eefe978fb910999e5f4">
+        <input type="button" onclick="getMessages()" value="Get messasge data">
+    </div>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket;
+    function getuser() {
+        let jwt = document.getElementById('jwt_txt').value
+        socket = io({
+            auth: {
+                token: jwt,
+                device: navigator.userAgent
+            }
+        });
+        socket.on('welcome', data => {
+            document.getElementById('user').innerHTML = data
+        })
+        socket.on('newMessage', data => {
+            getMessages()
+        })
+    }
+    async function getMessages() {
+        let jwt = document.getElementById('jwt_txt').value;
+        let user = document.getElementById('user_txt').value
+        socket.emit("user", user);
+        let res = await fetch('http://localhost:3000/api/v1/messages/' + user, {
+            headers: {
+                "authorization": "Bearer " + jwt
+            }
+        })
+        let messages = await res.json();
+        let ulmessage = document.getElementById('messages');
+        ulmessage.innerHTML = '';
+        for (const message of messages) {
+            ulmessage.innerHTML += `<li><b>${message.from.username}->${message.to.username}</b>: ${message.messageContent.text}</li>`
+        }
+    }
+    document.getElementById('form').addEventListener('submit', async e => {
+        e.preventDefault()
+        let jwt = document.getElementById('jwt_txt').value;
+        let user = document.getElementById('user_txt').value
+        let text = document.getElementById('input').value
+        let res = await fetch('http://localhost:3000/api/v1/messages', {
+            method: 'POST',
+            headers: {
+                "authorization": "Bearer " + jwt,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                to: user,
+                text: text
+            })
+        })
+        if (res.ok) {
+            let messages = await res.json();
+            socket.emit('newMessage', messages)
+            document.getElementById('input').value = "";
+            await getMessages()
+        }
+
+    })
+</script>
+
+</html>
