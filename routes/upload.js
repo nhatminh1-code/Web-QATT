@@ -118,7 +118,7 @@ router.post('/excel', uploadExcel.single('file'), async function (req, res, next
                 getSku.push(newProduct.sku)
                 result.push(newProduct)
             }
-             await productModel.insertMany(validProduct, { session })
+            await productModel.insertMany(validProduct, { session })
             await session.commitTransaction();
             await session.endSession()
         } catch (error) {

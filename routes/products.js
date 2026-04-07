@@ -56,6 +56,7 @@ router.post('/', CheckLogin, CheckRole("ADMIN"), async function (req, res, next)
   try {
     // 1. Tạo sản phẩm mới với Slugify
     let newProduct = new productModel({
+      sku: req.body.sku,
       title: req.body.title,
       slug: slugify(req.body.title,
         {
@@ -64,11 +65,12 @@ router.post('/', CheckLogin, CheckRole("ADMIN"), async function (req, res, next)
           lower: true,
           trim: true
         }
-      ), 
+      ),
       price: req.body.price,
       images: req.body.images,
       description: req.body.description,
-      category: req.body.category
+      category: req.body.category,
+      
     })
     await newProduct.save({ session });
 

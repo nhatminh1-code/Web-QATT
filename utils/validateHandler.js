@@ -22,7 +22,7 @@ module.exports = {
             minNumbers: 1,
             minSymbols: 1,
             minUppercase: 1
-        }).withMessage(" password it naht 8 ki tu trong do co it nhat 1 ki tu dac biet, 1 ki tu in hoa, 1 ki tu thuong , 1 ki tu so"),
+        }).withMessage(" password it nhat 8 ki tu trong do co it nhat 1 ki tu dac biet, 1 ki tu in hoa, 1 ki tu thuong , 1 ki tu so"),
         body("avatarUrl").optional({
             checkFalsy: true
         }).isURL().withMessage("URL sai dinh dang"),
