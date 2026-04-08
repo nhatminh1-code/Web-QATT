@@ -16,7 +16,7 @@ router.get('/', async function (req, res, next) {
   let queries = req.query;
   let titleQ = queries.title ? queries.title.toLowerCase() : '';
   let min = queries.minprice ? queries.minprice : 0;
-  let max = queries.maxprice ? queries.maxprice : 10000;
+  let max = queries.maxprice ? queries.maxprice : 999999999;
   console.log(queries);
   let data = await productModel.find({
     isDeleted: false,
